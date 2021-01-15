@@ -9,6 +9,7 @@ from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
 from button import Button
+from scoreboard import Scoreboard
 
 class Alieninvasion:
     """class to manage the working of the game"""
@@ -24,6 +25,8 @@ class Alieninvasion:
         pygame.display.set_caption("Alien Invasion")
 
         self.stats = GameStats(self)#initialize this before anything else
+
+        self.sb = Scoreboard(self)#creating a scoreboard after initializing stats
 
         self.ship = Ship(self)#as it needs the game to be its argument
 
@@ -70,6 +73,7 @@ class Alieninvasion:
             
             self.stats.reset_stats()#to reset when the play is clicked 2nd time and so on
             self.stats.game_active = True
+            self.sb.prep_score()
 
             #to clear any elements on screen left
             self.aliens.empty()
@@ -157,6 +161,9 @@ class Alieninvasion:
         #to draw the alien, draw() method need only one argument i.e. screen
         self.aliens.draw(self.screen)
 
+        #draw the scoring information
+        self.sb.show_score()
+
         #draw the game button if the game is inactive
         if not self.stats.game_active:
             self.play_button.draw_button()
@@ -183,6 +190,11 @@ class Alieninvasion:
         collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
         """keep the bullet argument false if you want the bullet to pass through 
         and hit all the targets behind it too"""
+
+        if collisions:
+            for aliens in collisions.values():
+                self.stats.score += self.settings.alien_points * len(aliens)
+            self.sb.prep_score()
 
         if not self.aliens:
             #destroy the bullets and create a new fleet
